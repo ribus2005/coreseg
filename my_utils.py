@@ -13,63 +13,6 @@ from sklearn.metrics import precision_recall_curve, auc
 
 import threading
 import queue
-
-
-
-
-class CoreDataset(torch.utils.data.Dataset):
-    def __init__(self, labels, srez_list, transform=None, multiply_channels = False, flag_list = [],):
-        """
-        labels: list of numpy arrays (H,W) или (H,W,1)
-        srez_list: list of numpy arrays (H,W) или (H,W,1)
-        transform: albumentations.Compose или любой кастомный трансформ
-        """
-        assert len(labels) == len(srez_list), "Labels and srez lists must have the same length"
-        
-        self.labels = labels
-        self.srez_list = srez_list
-        self.transform = transform
-        self.multiply_channels = multiply_channels
-        self.has_flags = False
-        if len(flag_list):
-            self.flags = flag_list
-            self.has_flags = True
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, idx):
-        label = self.labels[idx].astype("float32")
-        srez = self.srez_list[idx].astype("float32")
-
-        c_x = srez.shape[0] // 2
-        c_y = srez.shape[1] // 2
-        w = label.shape[0] // 2
-        h = label.shape[1] // 2
-
-        crop_srez = srez[(c_x - w):(c_x + w), (c_y - h):(c_y + h)]
-
-        if self.transform:
-            transformed = self.transform(image=crop_srez, target=label)
-            crop_srez = transformed['image']
-            label = transformed['target']
-
-        if self.multiply_channels:
-            crop_srez = np.stack([crop_srez] * 3)
-            
-
-        if self.has_flags:
-            flag = self.flags[idx]
-            return {
-                "image": crop_srez,  
-                "target": label,
-                "flag": flag,       
-            }
-        else:
-            return {
-                "image": crop_srez,  
-                "target": label,   
-            }
     
 
 class Decoder(nn.Module):
