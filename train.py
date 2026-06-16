@@ -18,7 +18,7 @@ import my_utils
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--dataset", type=str, default="datasets")
+    parser.add_argument("--dataset", type=str)
     parser.add_argument("--save-dir", type=str, default="weights/Segformer")
 
     parser.add_argument("--device", type=str, default="default")
